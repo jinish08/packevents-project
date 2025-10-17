@@ -20,11 +20,10 @@ import java.io.IOException;
 import java.util.Collections;
 
 @Component
-@RequiredArgsConstructor
+@RequiredArgsConstructor // Creates a constructor with final fields
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    // The UserDetailsService is no longer needed here
 
     @Override
     protected void doFilterInternal(
@@ -34,29 +33,32 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         final String authHeader = request.getHeader("Authorization");
+        final String jwt;
+        final String userEmail;
+
+        // 1. Check if the request has a JWT
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
+            filterChain.doFilter(request, response); // If not, pass to the next filter
             return;
         }
 
-        final String jwt = authHeader.substring(7);
-        final String userEmail = jwtService.extractUsername(jwt);
+        // 2. Extract the token and user email
+        jwt = authHeader.substring(7); // "Bearer ".length()
+        userEmail = jwtService.extractUsername(jwt);
 
+        // 3. If we have a user email and the user is not already authenticated
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            // --- THIS IS THE UPDATED LOGIC ---
 
-            // 1. Extract the role directly from the token's claims
             String role = jwtService.extractClaim(jwt, claims -> claims.get("role", String.class));
 
-            // 2. Create a UserDetails object on the fly with the correct authority
             UserDetails userDetails = new User(userEmail, "", Collections.singleton(new SimpleGrantedAuthority(role)));
 
-            // 3. Validate the token against this new UserDetails object
+            // 4. If the token is valid, update the Security Context
             if (jwtService.isTokenValid(jwt, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
-                        null,
-                        userDetails.getAuthorities() // Use the authorities we just created
+                        null, // We don't need credentials
+                        userDetails.getAuthorities()
                 );
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);

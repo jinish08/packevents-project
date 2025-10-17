@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
-import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
@@ -68,12 +67,12 @@ public class BookingService {
     }
 
     @KafkaListener(topics = "payment-events", groupId = "booking-group")
-    public void consumePaymentStatus(PaymentStatusEvent event) {
-        LOGGER.info("Received payment status event -> {}", event.toString());
+    public void consume(PaymentStatusEvent paymentStatusEvent) {
+        LOGGER.info("Received payment status event -> {}", paymentStatusEvent.toString());
 
         // Find the booking and update its status
-        bookingRepository.findById(event.bookingId()).ifPresent(booking -> {
-            if ("SUCCESS".equals(event.status())) {
+        bookingRepository.findById(paymentStatusEvent.bookingId()).ifPresent(booking -> {
+            if ("SUCCESS".equals(paymentStatusEvent.status())) {
                 booking.setStatus("CONFIRMED");
                 bookingRepository.save(booking);
                 LOGGER.info("Booking {} confirmed.", booking.getId());
