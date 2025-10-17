@@ -1,6 +1,7 @@
 package com.jinish.ncsu.sad.userservice.controller;
 
 import com.jinish.ncsu.sad.userservice.dto.LoginRequest;
+import com.jinish.ncsu.sad.userservice.model.Role;
 import com.jinish.ncsu.sad.userservice.model.User;
 import com.jinish.ncsu.sad.userservice.repository.UserRepository;
 import com.jinish.ncsu.sad.userservice.dto.LoginResponse;
@@ -32,8 +33,8 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<User> registerUser(@RequestBody User user) {
-        // Hash the password before saving
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRole(Role.ROLE_USER); // <-- ADD THIS LINE
 
         User savedUser = userRepository.save(user);
         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);

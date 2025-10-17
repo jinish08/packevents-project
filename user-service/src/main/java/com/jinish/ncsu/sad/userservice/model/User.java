@@ -4,11 +4,12 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -31,6 +32,9 @@ public class User implements UserDetails { // <-- Implement the interface
 
     private LocalDateTime createdAt;
 
+    @Enumerated(EnumType.STRING) // Stores the enum name ("ROLE_USER") in the DB
+    private Role role;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -40,8 +44,8 @@ public class User implements UserDetails { // <-- Implement the interface
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // We are not using roles yet, so we'll return an empty list.
-        return Collections.emptyList();
+        // This is how Spring Security understands roles
+        return List.of(new SimpleGrantedAuthority(role.name()));
     }
 
     @Override

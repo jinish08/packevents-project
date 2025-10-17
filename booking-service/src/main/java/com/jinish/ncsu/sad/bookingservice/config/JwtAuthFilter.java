@@ -8,20 +8,23 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
 
-@RequiredArgsConstructor // Creates a constructor with final fields
+@Component
+@RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final UserDetailsService userDetailsService;
+    // The UserDetailsService is no longer needed here
 
     @Override
     protected void doFilterInternal(
@@ -31,29 +34,29 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         final String authHeader = request.getHeader("Authorization");
-        final String jwt;
-        final String userEmail;
-
-        // 1. Check if the request has a JWT
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response); // If not, pass to the next filter
+            filterChain.doFilter(request, response);
             return;
         }
 
-        // 2. Extract the token and user email
-        jwt = authHeader.substring(7); // "Bearer ".length()
-        userEmail = jwtService.extractUsername(jwt);
+        final String jwt = authHeader.substring(7);
+        final String userEmail = jwtService.extractUsername(jwt);
 
-        // 3. If we have a user email and the user is not already authenticated
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+            // --- THIS IS THE UPDATED LOGIC ---
 
-            // 4. If the token is valid, update the Security Context
+            // 1. Extract the role directly from the token's claims
+            String role = jwtService.extractClaim(jwt, claims -> claims.get("role", String.class));
+
+            // 2. Create a UserDetails object on the fly with the correct authority
+            UserDetails userDetails = new User(userEmail, "", Collections.singleton(new SimpleGrantedAuthority(role)));
+
+            // 3. Validate the token against this new UserDetails object
             if (jwtService.isTokenValid(jwt, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
-                        null, // We don't need credentials
-                        userDetails.getAuthorities()
+                        null,
+                        userDetails.getAuthorities() // Use the authorities we just created
                 );
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
