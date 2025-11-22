@@ -18,7 +18,7 @@ import java.util.function.Function;
 public class JwtService {
 
     // IMPORTANT: In a real app, this should be in application.properties
-    private final static String secretString = "your-super-secret-and-long-enough-key-for-hs256-and-it-must-be-at-least-this-long";
+    private static final String SECRET_STRING = "your-super-secret-and-long-enough-key-for-hs256-and-it-must-be-at-least-this-long";
 
     private Key key;
 
@@ -26,7 +26,7 @@ public class JwtService {
     @PostConstruct
     public void init() {
         // Convert the string key into a secure Key object
-        this.key = Keys.hmacShaKeyFor(secretString.getBytes());
+        this.key = Keys.hmacShaKeyFor(SECRET_STRING.getBytes());
     }
 
     public String generateToken(User user) {
