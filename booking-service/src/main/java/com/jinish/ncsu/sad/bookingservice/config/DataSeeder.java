@@ -7,12 +7,14 @@ import com.jinish.ncsu.sad.bookingservice.repository.SeatRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class DataSeeder implements CommandLineRunner {
 
     private final EventRepository eventRepository;
@@ -38,7 +40,7 @@ public class DataSeeder implements CommandLineRunner {
 
             eventRepository.saveAll(List.of(event1, event2));
 
-            System.out.println("--- Sample events seeded ---");
+            log.info("--- Sample events seeded ---");
 
             // --- ADD SEATS FOR EVENT 1 ---
             for (int i = 1; i <= 5; i++) {
@@ -57,7 +59,7 @@ public class DataSeeder implements CommandLineRunner {
                 seat.setCategory("VIP");
                 seatRepository.save(seat);
             }
-            System.out.println("--- Sample seats seeded ---");
+            log.info("--- Sample seats seeded ---");
         }
     }
 }

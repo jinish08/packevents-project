@@ -7,9 +7,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class DataSeeder implements CommandLineRunner {
 
     private final UserRepository userRepository;
@@ -25,7 +27,7 @@ public class DataSeeder implements CommandLineRunner {
             adminUser.setPassword(passwordEncoder.encode("adminpass"));
             adminUser.setRole(Role.ROLE_ADMIN);
             userRepository.save(adminUser);
-            System.out.println("--- Admin user seeded ---");
+            log.info("--- Admin user seeded ---");
         }
     }
 }
