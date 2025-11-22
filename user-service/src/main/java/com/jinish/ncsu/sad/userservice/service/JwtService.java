@@ -18,7 +18,7 @@ import java.util.function.Function;
 public class JwtService {
 
     // IMPORTANT: In a real app, this should be in application.properties
-    private final String secretString = "your-super-secret-and-long-enough-key-for-hs256-and-it-must-be-at-least-this-long";
+    private final static String secretString = "your-super-secret-and-long-enough-key-for-hs256-and-it-must-be-at-least-this-long";
 
     private Key key;
 
