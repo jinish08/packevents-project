@@ -8,6 +8,7 @@ class NotificationServiceApplicationTests {
 
     @Test
     void contextLoads() {
+        // Context loads successfully
     }
 
 }

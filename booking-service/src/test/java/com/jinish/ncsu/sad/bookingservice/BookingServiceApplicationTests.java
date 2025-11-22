@@ -8,6 +8,7 @@ class BookingServiceApplicationTests {
 
     @Test
     void contextLoads() {
+        // Context loads successfully
     }
 
 }

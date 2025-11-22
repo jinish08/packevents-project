@@ -8,6 +8,7 @@ class AdminServiceApplicationTests {
 
     @Test
     void contextLoads() {
+        // Context loads successfully
     }
 
 }
